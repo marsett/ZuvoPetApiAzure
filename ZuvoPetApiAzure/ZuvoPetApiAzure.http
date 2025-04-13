@@ -1,0 +1,6 @@
+@ZuvoPetApiAzure_HostAddress = http://localhost:5240
+
+GET {{ZuvoPetApiAzure_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
