@@ -1,0 +1,6 @@
+@***REMOVED***_HostAddress = http://localhost:5***REMOVED***40
+
+GET {{***REMOVED***_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
