@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using ZuvoPetApiAzure.DTO;
 using ZuvoPetApiAzure.Repositories;
 using ZuvoPetNuget;
 
@@ -287,6 +288,30 @@ namespace ZuvoPetApiAzure.Controllers
         CrearMensaje(int idemisor, int idreceptor, string contenido)
         {
             return await this.repo.AgregarMensajeAsync(idemisor, idreceptor, contenido);
+        }
+
+        [HttpPut("ActualizarDescripcionAdoptante/{idusuario}")]
+        public async Task<ActionResult<bool>>
+        ActualizarDescripcionAdoptante(int idusuario, [FromBody] string descripcion)
+        {
+            return await this.repo.ActualizarDescripcionAdoptante(idusuario, descripcion);
+        }
+
+        [HttpPut("ActualizarDetallesAdoptante/{idusuario}")]
+        public async Task<ActionResult<bool>>
+        ActualizarDetallesAdoptante(int idusuario, [FromBody] DetallesAdoptanteUpdateDTO detallesDTO)
+        {
+            VistaPerfilAdoptante modelo = new VistaPerfilAdoptante
+            {
+                TipoVivienda = detallesDTO.TipoVivienda,
+                RecursosDisponibles = detallesDTO.RecursosDisponibles,
+                TiempoEnCasa = detallesDTO.TiempoEnCasa,
+                TieneJardin = detallesDTO.TieneJardin,
+                OtrosAnimales = detallesDTO.OtrosAnimales
+            };
+            return await this.repo.ActualizarDetallesAdoptante(
+                idusuario,
+                modelo);
         }
     }
 }

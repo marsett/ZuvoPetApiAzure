@@ -1195,5 +1195,287 @@ namespace ZuvoPetApiAzure.Repositories
             await this.context.SaveChangesAsync();
             return mensaje;
         }
+
+        public async Task<bool> ActualizarDescripcionAsync(int idusuario, string descripcion)
+        {
+            try
+            {
+                var refugio = await GetPerfilRefugio(idusuario);
+                if (refugio == null)
+                    return false;
+
+                refugio.Descripcion = descripcion;
+                await context.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> ActualizarDetallesRefugioAsync(int idUsuario, string contacto, int cantidadAnimales, int capacidadMaxima)
+        {
+            try
+            {
+                var refugio = await GetPerfilRefugio(idUsuario);
+                if (refugio == null)
+                    return false;
+
+                refugio.ContactoRefugio = contacto;
+                refugio.CantidadAnimales = cantidadAnimales;
+                refugio.CapacidadMaxima = capacidadMaxima;
+
+                await context.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> ActualizarUbicacionRefugioAsync(int idUsuario, double latitud, double longitud)
+        {
+            try
+            {
+                var refugio = await GetRefugioByUsuarioIdAsync(idUsuario);
+                if (refugio == null)
+                    return false;
+
+                // Redondea los valores a 6 decimales
+                refugio.Latitud = Math.Round(latitud, 6);
+                refugio.Longitud = Math.Round(longitud, 6);
+
+                await context.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> ActualizarPerfilRefugioAsync(int idUsuario, string email, string nombreRefugio, string contactoRefugio)
+        {
+            try
+            {
+                var usuario = await context.Usuarios.FindAsync(idUsuario);
+                if (usuario == null)
+                    return false;
+
+                usuario.Email = email;
+
+                var refugio = await context.Refugios.FirstOrDefaultAsync(r => r.IdUsuario == idUsuario);
+                if (refugio == null)
+                    return false;
+
+                refugio.NombreRefugio = nombreRefugio;
+                refugio.ContactoRefugio = contactoRefugio;
+
+                await context.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public async Task<string> ActualizarFotoPerfilAsync(int idUsuario, string nombreArchivo)
+        {
+            try
+            {
+                var refugio = await GetPerfilRefugio(idUsuario);
+                if (refugio == null)
+                    return null;
+
+                // Guardar el nombre de archivo anterior para retornarlo posiblemente
+                string archivoAnterior = refugio.FotoPerfil;
+
+                // Actualizar con el nuevo nombre de archivo
+                refugio.FotoPerfil = nombreArchivo;
+                await context.SaveChangesAsync();
+
+                // Obtener la nueva foto de perfil para retornarla
+                return await GetFotoPerfilAsync(idUsuario);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public async Task<bool> MarcarMensajesComoLeidosAsync(int usuarioActualId, int otroUsuarioId)
+        {
+            try
+            {
+                // Obtener directamente los mensajes no leídos que necesitamos actualizar
+                // con tracking habilitado (por defecto en EF Core)
+                var mensajesNoLeidos = await context.Mensajes
+                    .Where(m => m.IdEmisor == usuarioActualId &&
+                                m.IdReceptor == otroUsuarioId &&
+                                !m.Leido)
+                    .ToListAsync();
+
+                // Marcar cada mensaje como leído
+                foreach (var mensaje in mensajesNoLeidos)
+                {
+                    mensaje.Leido = true;
+                }
+
+                // Guardar los cambios
+                await context.SaveChangesAsync();
+
+                // Retornar verdadero si hubo cambios, falso si no había mensajes para marcar
+                return mensajesNoLeidos.Any();
+            }
+            catch (Exception ex)
+            {
+                // Es mejor registrar la excepción para depuración
+                Console.WriteLine($"Error al marcar mensajes como leídos: {ex.Message}");
+                return false;
+            }
+        }
+
+
+
+        //public async Task<Adoptante> GetAdoptanteChatByUsuarioId(int idusuario)
+        //{
+        //    return await this.context.Adoptantes
+        //        .Include(adoptante => adoptante.Usuario.PerfilUsuario)
+        //        .FirstOrDefaultAsync(a => a.IdUsuario == idusuario);
+        //}
+
+
+        public async Task<bool> ActualizarDescripcionAdoptante(int idUsuario, string descripcion)
+        {
+            try
+            {
+                var adoptante = await this.GetPerfilAdoptante(idUsuario);
+                if (adoptante == null) return false;
+
+                adoptante.Descripcion = descripcion;
+                await this.context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // Opcionalmente, registrar excepción
+                Console.WriteLine($"Error al actualizar descripción: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<bool> ActualizarDetallesAdoptante(int idUsuario, VistaPerfilAdoptante modelo)
+        {
+            try
+            {
+                var adoptante = await this.GetPerfilAdoptante(idUsuario);
+                if (adoptante == null) return false;
+
+                adoptante.TipoVivienda = modelo.TipoVivienda;
+                adoptante.RecursosDisponibles = modelo.RecursosDisponibles;
+                adoptante.TiempoEnCasa = modelo.TiempoEnCasa;
+                adoptante.TieneJardin = modelo.TieneJardin;
+                adoptante.OtrosAnimales = modelo.OtrosAnimales;
+
+                await this.context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // Opcionalmente, registrar excepción
+                Console.WriteLine($"Error al actualizar detalles: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<bool> ActualizarPerfilAdoptante(int idUsuario, string email, string nombre)
+        {
+            try
+            {
+                var usuario = await this.context.Usuarios.FindAsync(idUsuario);
+                if (usuario != null)
+                {
+                    usuario.Email = email;
+                }
+
+                var adoptante = await this.context.Adoptantes.FirstOrDefaultAsync(a => a.IdUsuario == idUsuario);
+                if (adoptante != null)
+                {
+                    adoptante.Nombre = nombre;
+                }
+
+                await this.context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // Opcionalmente, registrar excepción
+                Console.WriteLine($"Error al actualizar perfil: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<bool> ActualizarFotoPerfilAdoptante(int idUsuario, string fileName)
+        {
+            try
+            {
+                var adoptante = await this.GetPerfilAdoptante(idUsuario);
+                if (adoptante == null) return false;
+
+                adoptante.FotoPerfil = fileName;
+                await this.context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // Opcionalmente, registrar excepción
+                Console.WriteLine($"Error al actualizar foto de perfil: {ex.Message}");
+                return false;
+            }
+        }
+
+        public async Task<bool> IncrementarVistasMascota(int idMascota)
+        {
+            try
+            {
+                var mascota = await this.context.Mascotas.FindAsync(idMascota);
+                if (mascota == null) return false;
+
+                mascota.Vistas++;
+                await this.context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                // Opcionalmente, registrar excepción
+                Console.WriteLine($"Error al incrementar vistas: {ex.Message}");
+                return false;
+            }
+        }
+
+
+
+        public async Task<Adoptante> GetAdoptanteByUsuarioIdAsync(int idUsuario)
+        {
+            return await this.context.Adoptantes.FirstOrDefaultAsync(a => a.IdUsuario == idUsuario);
+        }
+
+
+        public async Task<Adoptante> GetAdoptanteChatByUsuarioId(int idusuario)
+        {
+            return await this.context.Adoptantes
+                .Include(adoptante => adoptante.Usuario.PerfilUsuario)
+                .FirstOrDefaultAsync(a => a.IdUsuario == idusuario);
+        }
+
+        public async Task<Refugio> GetRefugioChatByIdAsync(int refugioId)
+        {
+            return await this.context.Refugios
+                .Include(refugio => refugio.Usuario.PerfilUsuario)
+                .FirstOrDefaultAsync(r => r.IdUsuario == refugioId);
+        }
     }
 }

@@ -83,5 +83,24 @@ namespace ZuvoPetApiAzure.Repositories
         Task<List<ConversacionViewModel>> GetConversacionesAdoptanteAsync(int usuarioId);
         Task<List<ConversacionViewModel>> GetConversacionesRefugioAsync(int usuarioId);
         Task<Mensaje> AgregarMensajeAsync(int emisorId, int receptorId, string contenido);
+
+
+
+        Task<bool> ActualizarDescripcionAsync(int idUsuario, string descripcion);
+        Task<bool> ActualizarDetallesRefugioAsync(int idUsuario, string contacto, int cantidadAnimales, int capacidadMaxima);
+        Task<bool> ActualizarUbicacionRefugioAsync(int idUsuario, double latitud, double longitud);
+        Task<bool> ActualizarPerfilRefugioAsync(int idUsuario, string email, string nombreRefugio, string contactoRefugio);
+        Task<string> ActualizarFotoPerfilAsync(int idUsuario, string nombreArchivo);
+        Task<bool> MarcarMensajesComoLeidosAsync(int usuarioActualId, int otroUsuarioId);
+        Task<Adoptante> GetAdoptanteChatByUsuarioId(int idusuario);
+
+
+        Task<bool> ActualizarDescripcionAdoptante(int idUsuario, string descripcion);
+        Task<bool> ActualizarDetallesAdoptante(int idUsuario, VistaPerfilAdoptante modelo);
+        Task<bool> ActualizarPerfilAdoptante(int idUsuario, string email, string nombre);
+        Task<bool> ActualizarFotoPerfilAdoptante(int idUsuario, string fileName);
+        Task<bool> IncrementarVistasMascota(int idMascota);
+        Task<Adoptante> GetAdoptanteByUsuarioIdAsync(int idUsuario);
+        Task<Refugio> GetRefugioChatByIdAsync(int refugioId);
     }
 }
