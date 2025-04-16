@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using ZuvoPetApiAzure.DTO;
+using ZuvoPetApiAzure.Helpers;
 using ZuvoPetApiAzure.Repositories;
 using ZuvoPetNuget;
 
@@ -9,12 +11,15 @@ namespace ZuvoPetApiAzure.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Adoptante")]
     public class AdoptanteController : ControllerBase
     {
         private IRepositoryZuvoPet repo;
-        public AdoptanteController(IRepositoryZuvoPet repo)
+        private HelperUsuarioToken helper;
+        public AdoptanteController(IRepositoryZuvoPet repo, HelperUsuarioToken helper)
         {
             this.repo = repo;
+            this.helper = helper;
         }
 
         [HttpGet("ObtenerMascotasDestacadas")]
@@ -93,19 +98,40 @@ namespace ZuvoPetApiAzure.Controllers
         {
             return await this.repo.ObtenerContadoresReaccionesAsync(idhistoria);
         }
-        
-        [HttpGet("ObtenerPerfilAdoptante/{idusuario}")]
-        public async Task<ActionResult<VistaPerfilAdoptante>>
-        GetPerfilAdoptante(int idusuario)
+
+        //[HttpGet("ObtenerPerfilAdoptante/{idusuario}")]
+        //public async Task<ActionResult<VistaPerfilAdoptante>>
+        //GetPerfilAdoptante(int idusuario)
+        //{
+        //    return await this.repo.GetPerfilAdoptante(idusuario);
+        //}
+
+        // Ejemplo de cómo modificar un endpoint para usar el helper
+        [HttpGet("ObtenerPerfilAdoptante")]
+        public async Task<ActionResult<VistaPerfilAdoptante>> GetPerfilAdoptante()
         {
-            return await this.repo.GetPerfilAdoptante(idusuario);
+            // Obtener el usuario del token
+            var usuario = this.helper.GetUsuario();
+            if (usuario == null)
+            {
+                return Unauthorized();
+            }
+
+            return await this.repo.GetPerfilAdoptante(usuario.IdUsuario);
         }
 
-        [HttpGet("ObtenerMascotasFavoritas/{idusuario}")]
-        public async Task<ActionResult<List<MascotaCard>>>
-        GetMascotasFavoritas(int idusuario)
+        //[HttpGet("ObtenerMascotasFavoritas/{idusuario}")]
+        //public async Task<ActionResult<List<MascotaCard>>>
+        //GetMascotasFavoritas(int idusuario)
+        //{
+        //    return await this.repo.ObtenerMascotasFavoritas(idusuario);
+        //}
+
+        [HttpGet("ObtenerMascotasFavoritas")]
+        public async Task<ActionResult<List<MascotaCard>>> GetMascotasFavoritas()
         {
-            return await this.repo.ObtenerMascotasFavoritas(idusuario);
+            var usuario = this.helper.GetUsuario();
+            return await this.repo.ObtenerMascotasFavoritas(usuario.IdUsuario);
         }
 
         [HttpGet("ObtenerMascotasAdoptadas/{idusuario}")]
@@ -312,6 +338,60 @@ namespace ZuvoPetApiAzure.Controllers
             return await this.repo.ActualizarDetallesAdoptante(
                 idusuario,
                 modelo);
+        }
+
+        [HttpPut("ActualizarPerfilAdoptante/{idusuario}")]
+        public async Task<ActionResult<bool>>
+        ActualizarPerfilAdoptante(int idusuario, [FromBody] PerfilAdoptanteDTO datos)
+        {
+            return await this.repo.ActualizarPerfilAdoptante(
+                idusuario,
+                datos.Email,
+                datos.Nombre);
+        }
+
+        [HttpPut("ActualizarFotoPerfil/{idusuario}")]
+        public async Task<ActionResult<bool>>
+        ActualizarFotoPerfil(int idusuario, [FromBody] FotoPerfilDTO datos)
+        {
+            return await this.repo.ActualizarFotoPerfilAdoptante(
+                idusuario,
+                datos.NombreArchivo);
+        }
+
+        [HttpPut("ActualizarVistasMascota/{idmascota}")]
+        public async Task<ActionResult<bool>>
+        IncrementarVistasMascota(int idmascota)
+        {
+            return await this.repo.IncrementarVistasMascota(idmascota);
+        }
+
+        [HttpPut("ActualizarMensajesComoLeidos/{idusuarioactual}/{idotrousuario}")]
+        public async Task<ActionResult<bool>>
+        ActualizarMensajesComoLeidos(int idusuarioactual, int idotrousuario)
+        {
+            return await this.repo.MarcarMensajesComoLeidosAsync(idusuarioactual, idotrousuario);
+        }
+
+        [HttpGet("ObtenerAdoptanteByUsuarioIdAsync/{idusuario}")]
+        public async Task<ActionResult<Adoptante>>
+        GetAdoptanteByUsuarioIdAsync(int idusuario)
+        {
+            return await this.repo.GetAdoptanteByUsuarioIdAsync(idusuario);
+        }
+
+        [HttpGet("ObtenerRefugioChatById/{idrefugio}")]
+        public async Task<ActionResult<Refugio>>
+        GetRefugioChatById(int idrefugio)
+        {
+            return await this.repo.GetRefugioChatByIdAsync(idrefugio);
+        }
+
+        [HttpGet("ObtenerRefugioChatDosById/{idusuario}")]
+        public async Task<ActionResult<Refugio>>
+        GetRefugioChatDosById(int idusuario)
+        {
+            return await this.repo.GetRefugioChatDosByIdAsync(idusuario);
         }
     }
 }

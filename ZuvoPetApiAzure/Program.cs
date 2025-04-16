@@ -3,9 +3,17 @@ using ZuvoPetApiAzure.Repositories;
 using ZuvoPetApiAzure.Data;
 using System.Text.Json.Serialization;
 using Scalar.AspNetCore;
+using ZuvoPetApiAzure.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
+HelperCriptography.Initialize(builder.Configuration);
+builder.Services.AddHttpContextAccessor();
+HelperActionServicesOAuth helper = new HelperActionServicesOAuth(builder.Configuration);
+builder.Services.AddSingleton<HelperActionServicesOAuth>(helper);
+builder.Services.AddScoped<HelperUsuarioToken>();
+builder.Services.AddAuthentication(helper.GetAuthenticateSchema())
+    .AddJwtBearer(helper.GetJwtBearerOptions());
 // Add services to the container.
 string connectionString =
     builder.Configuration.GetConnectionString("ZuvoPet");
