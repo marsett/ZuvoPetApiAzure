@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using ***REMOVED***.DTO;
+using ***REMOVED***.Helpers;
 using ***REMOVED***.Repositories;
 using ZuvoPetNuget;
 
@@ -8,12 +10,15 @@ namespace ***REMOVED***.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Refugio")]
     public class RefugioController : ControllerBase
     {
         private IRepositoryZuvoPet repo;
-        public RefugioController(IRepositoryZuvoPet repo)
+        private HelperUsuarioToken helper;
+        public RefugioController(IRepositoryZuvoPet repo, HelperUsuarioToken helper)
         {
             this.repo = repo;
+            this.helper = helper;
         }
 
         [HttpGet("ObtenerRefugioByUsuarioId/{idusuario}")]
@@ -45,11 +50,19 @@ namespace ***REMOVED***.Controllers
             return await this.repo.ObtenerMascotasRefugioAsync(idusuario);
         }
 
-        [HttpGet("ObtenerRefugio/{idusuario}")]
-        public async Task<ActionResult<Refugio>>
-        GetObtenerRefugio(int idusuario)
+        //[HttpGet("ObtenerRefugio/{idusuario}")]
+        //public async Task<ActionResult<Refugio>>
+        //GetObtenerRefugio(int idusuario)
+        //{
+        //    return await this.repo.GetRefugio(idusuario);
+        //}
+
+        // Ejemplo de endpoint modificado
+        [HttpGet("ObtenerRefugio")]
+        public async Task<ActionResult<Refugio>> GetObtenerRefugio()
         {
-            return await this.repo.GetRefugio(idusuario);
+            var usuario = this.helper.GetUsuario();
+            return await this.repo.GetRefugio(usuario.IdUsuario);
         }
 
         [HttpPost("CrearMascotaRefugio/{idusuario}")]
