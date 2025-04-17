@@ -21,11 +21,12 @@ namespace ZuvoPetApiAzure.Controllers
             this.helper = helper;
         }
 
-        [HttpGet("ObtenerRefugioByUsuarioId/{idusuario}")]
+        [HttpGet("ObtenerRefugioByUsuarioId")]
         public async Task<ActionResult<Refugio>>
-        GetRefugioByUsuarioId(int idusuario)
+        GetRefugioByUsuarioId()
         {
-            return await this.repo.GetRefugioByUsuarioIdAsync(idusuario);
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            return await this.repo.GetRefugioByUsuarioIdAsync(idUsuario);
         }
 
         [HttpGet("ObtenerMascotasByRefugioId/{idrefugio}")]
@@ -36,18 +37,19 @@ namespace ZuvoPetApiAzure.Controllers
             return Ok(mascotas);
         }
 
-        [HttpGet("ObtenerSolicitudesByEstadoAndRefugio/{idrefugio}/{estado}")]
+        [HttpGet("ObtenerSolicitudesByEstadoAndRefugio")]
         public async Task<ActionResult<int>>
-        GetSolicitudesByEstadoAndRefugio(int idrefugio, string estado)
+        GetSolicitudesByEstadoAndRefugio([FromQuery] SolicitudRefugioDTO solicitud)
         {
-            return await this.repo.GetSolicitudesByEstadoAndRefugioAsync(idrefugio, estado);
+            return await this.repo.GetSolicitudesByEstadoAndRefugioAsync(solicitud.IdRefugio, solicitud.Estado);
         }
 
-        [HttpGet("ObtenerMascotasRefugio/{idusuario}")]
+        [HttpGet("ObtenerMascotasRefugio")]
         public async Task<ActionResult<List<MascotaCard>>>
-        GetObtenerMascotasRefugio(int idusuario)
+        GetObtenerMascotasRefugio()
         {
-            return await this.repo.ObtenerMascotasRefugioAsync(idusuario);
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            return await this.repo.ObtenerMascotasRefugioAsync(idUsuario);
         }
 
         //[HttpGet("ObtenerRefugio/{idusuario}")]

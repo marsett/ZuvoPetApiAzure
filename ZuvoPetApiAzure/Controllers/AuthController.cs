@@ -25,6 +25,15 @@ namespace ZuvoPetApiAzure.Controllers
             this.helper = helper;
         }
 
+        [HttpGet("ObtenerHistoriasExitoLanding")]
+        public async Task<ActionResult<List<HistoriaExito>>>
+        GetHistoriasExitoLanding()
+        {
+            List<HistoriaExito> historiasExito = await this.repo.ObtenerHistoriasExitoAsync();
+            List<HistoriaExito> historiasLimitadas = historiasExito.OrderBy(historias => historias.FechaPublicacion).Take(3).ToList();
+            return historiasLimitadas;
+        }
+
         [HttpPost("[action]")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
@@ -84,6 +93,115 @@ namespace ZuvoPetApiAzure.Controllers
                     //nombreUsuario = usuario.NombreUsuario,
                     //fotoPerfil = fotoPerfil
                 });
+            }
+        }
+
+        [HttpPost("[action]")]
+        public async Task<IActionResult> Registro([FromBody] RegistroDTO modelo)
+        {
+            // Validar que el tipo de usuario sea válido
+            if (modelo.TipoUsuario != "Adoptante" && modelo.TipoUsuario != "Refugio")
+            {
+                return BadRequest(new { mensaje = "El tipo de usuario debe ser 'Adoptante' o 'Refugio'." });
+            }
+            // Validar fortaleza de la contraseña
+            var passwordRegex = new System.Text.RegularExpressions.Regex(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8,}$");
+            if (!passwordRegex.IsMatch(modelo.ContrasenaLimpia))
+            {
+                return BadRequest(new { mensaje = "La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas, números y al menos un carácter especial." });
+            }
+
+            // Validar formato de correo electrónico
+            var emailRegex = new System.Text.RegularExpressions.Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+            if (string.IsNullOrEmpty(modelo.Email) || !emailRegex.IsMatch(modelo.Email))
+            {
+                return BadRequest(new { mensaje = "Debe proporcionar una dirección de correo electrónico válida." });
+            }
+
+            // Verificar si el usuario o email ya existe
+            if (await repo.UserExistsAsync(modelo.NombreUsuario, modelo.Email))
+            {
+                return BadRequest(new { mensaje = "El nombre de usuario o el correo ya están en uso." });
+            }
+
+            try
+            {
+                // Iniciar transacción (si tu repositorio lo soporta)
+                // Usar un using o mecanismo similar dependiendo de cómo implementes la transaccionalidad
+
+                // Registrar el usuario
+                int? userId = await this.repo.RegisterUserAsync(
+                    modelo.NombreUsuario,
+                    modelo.Email,
+                    modelo.ContrasenaLimpia,
+                    modelo.TipoUsuario);
+
+                if (userId == null)
+                {
+                    return BadRequest(new { mensaje = "No se pudo crear el usuario" });
+                }
+
+                // Crear perfil con avatar
+                string nombreAvatar = HelperAvatarDinamico.CrearYGuardarAvatar(modelo.NombreUsuario);
+                await this.repo.RegisterPerfilUserAsync(userId.Value, nombreAvatar);
+
+                // Procesar información adicional según el tipo de usuario
+                if (modelo.TipoUsuario == "Adoptante" && modelo.DatosAdoptante != null)
+                {
+                    await this.repo.RegisterAdoptanteAsync(
+                        userId.Value,
+                        modelo.DatosAdoptante.Nombre,
+                        modelo.DatosAdoptante.TipoVivienda,
+                        modelo.DatosAdoptante.TieneJardin,
+                        modelo.DatosAdoptante.OtrosAnimales,
+                        modelo.DatosAdoptante.RecursosDisponibles,
+                        modelo.DatosAdoptante.TiempoEnCasa);
+                }
+                else if (modelo.TipoUsuario == "Refugio" && modelo.DatosRefugio != null)
+                {
+                    // Procesar coordenadas
+                    double latitud = 0, longitud = 0;
+
+                    if (!string.IsNullOrEmpty(modelo.DatosRefugio.LatitudStr))
+                    {
+                        double.TryParse(modelo.DatosRefugio.LatitudStr,
+                            System.Globalization.NumberStyles.Float,
+                            System.Globalization.CultureInfo.InvariantCulture,
+                            out latitud);
+                    }
+
+                    if (!string.IsNullOrEmpty(modelo.DatosRefugio.LongitudStr))
+                    {
+                        double.TryParse(modelo.DatosRefugio.LongitudStr,
+                            System.Globalization.NumberStyles.Float,
+                            System.Globalization.CultureInfo.InvariantCulture,
+                            out longitud);
+                    }
+
+                    await this.repo.RegisterRefugioAsync(
+                        userId.Value,
+                        modelo.DatosRefugio.NombreRefugio,
+                        modelo.DatosRefugio.ContactoRefugio,
+                        modelo.DatosRefugio.CantidadAnimales,
+                        modelo.DatosRefugio.CapacidadMaxima,
+                        latitud,
+                        longitud);
+                }
+
+                // Si usaste una transacción, confirmarla aquí
+
+                return Ok(new
+                {
+                    mensaje = "Usuario registrado correctamente",
+                    idUsuario = userId.Value,
+                    tipoUsuario = modelo.TipoUsuario
+                });
+            }
+            catch (Exception ex)
+            {
+                // Si usaste una transacción, revertirla aquí
+
+                return StatusCode(500, new { mensaje = "Error al completar el registro: " + ex.Message });
             }
         }
     }

@@ -34,5 +34,11 @@ namespace ZuvoPetApiAzure.Helpers
             UsuarioTokenDTO model = JsonConvert.DeserializeObject<UsuarioTokenDTO>(jsonUsuario);
             return model;
         }
+
+        public int GetAuthenticatedUserId()
+        {
+            var usuario = GetUsuario();
+            return usuario.IdUsuario;
+        }
     }
 }
