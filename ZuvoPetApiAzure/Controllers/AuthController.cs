@@ -5,11 +5,10 @@ using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using ***REMOVED***.DTO;
 using ***REMOVED***.Helpers;
-using ***REMOVED***.Models;
 using ***REMOVED***.Repositories;
-using ZuvoPetNuget;
+using ZuvoPetNuget.Models;
+using ZuvoPetNuget.Dtos;
 
 namespace ***REMOVED***.Controllers
 {
@@ -25,12 +24,30 @@ namespace ***REMOVED***.Controllers
             this.helper = helper;
         }
 
+        [HttpGet("ValidateUser")]
+        public async Task<IActionResult>
+        ValidateUser(string username, string email)
+        {
+            bool exists = await this.repo.UserExistsAsync(username, email);
+            return Ok(new { exists });
+        }
+
         [HttpGet("ObtenerHistoriasExitoLanding")]
-        public async Task<ActionResult<List<HistoriaExito>>>
+        public async Task<ActionResult<List<HistoriaExitoLandingDTO>>>
         GetHistoriasExitoLanding()
         {
             List<HistoriaExito> historiasExito = await this.repo.ObtenerHistoriasExitoAsync();
-            List<HistoriaExito> historiasLimitadas = historiasExito.OrderBy(historias => historias.FechaPublicacion).Take(3).ToList();
+            var historiasLimitadas = historiasExito
+                .OrderBy(historias => historias.FechaPublicacion)
+                .Take(3)
+                .Select(h => new HistoriaExitoLandingDTO
+                {
+                    Titulo = h.Titulo,
+                    Descripcion = h.Descripcion,
+                    Foto = h.Foto
+                })
+                .ToList();
+
             return historiasLimitadas;
         }
 
@@ -42,8 +59,8 @@ namespace ***REMOVED***.Controllers
             {
                 return Unauthorized(new { mensaje = "Credenciales incorrectas" });
             }
-            else 
-            { 
+            else
+            {
 
                 // Obtener la foto de perfil del usuario
                 string fotoPerfil = await this.repo.GetFotoPerfilAsync(usuario.Id);

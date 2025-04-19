@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
-using ZuvoPetNuget;
+using ZuvoPetNuget.Models;
 
 namespace ***REMOVED***.Data
 {

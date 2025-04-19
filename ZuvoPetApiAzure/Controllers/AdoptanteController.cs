@@ -2,10 +2,10 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using ***REMOVED***.DTO;
 using ***REMOVED***.Helpers;
 using ***REMOVED***.Repositories;
-using ZuvoPetNuget;
+using ZuvoPetNuget.Dtos;
+using ZuvoPetNuget.Models;
 
 namespace ***REMOVED***.Controllers
 {

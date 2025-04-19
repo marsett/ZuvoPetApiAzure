@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 using System.Security.Claims;
 using ***REMOVED***.Data;
 using ***REMOVED***.Helpers;
-using ZuvoPetNuget;
+using ZuvoPetNuget.Models;
 
 namespace ***REMOVED***.Repositories
 {

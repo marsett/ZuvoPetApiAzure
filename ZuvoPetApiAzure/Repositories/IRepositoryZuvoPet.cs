@@ -1,4 +1,4 @@
-﻿using ZuvoPetNuget;
+﻿using ZuvoPetNuget.Models;
 
 namespace ***REMOVED***.Repositories
 {
