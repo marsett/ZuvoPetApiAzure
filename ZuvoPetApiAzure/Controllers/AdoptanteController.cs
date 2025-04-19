@@ -2,10 +2,10 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using ZuvoPetApiAzure.DTO;
 using ZuvoPetApiAzure.Helpers;
 using ZuvoPetApiAzure.Repositories;
-using ZuvoPetNuget;
+using ZuvoPetNuget.Dtos;
+using ZuvoPetNuget.Models;
 
 namespace ZuvoPetApiAzure.Controllers
 {

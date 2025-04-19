@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using ZuvoPetApiAzure.DTO;
 using ZuvoPetApiAzure.Helpers;
 using ZuvoPetApiAzure.Repositories;
-using ZuvoPetNuget;
+using ZuvoPetNuget.Models;
+using ZuvoPetNuget.Dtos;
 
 namespace ZuvoPetApiAzure.Controllers
 {
@@ -52,25 +52,18 @@ namespace ZuvoPetApiAzure.Controllers
             return await this.repo.ObtenerMascotasRefugioAsync(idUsuario);
         }
 
-        //[HttpGet("ObtenerRefugio/{idusuario}")]
-        //public async Task<ActionResult<Refugio>>
-        //GetObtenerRefugio(int idusuario)
-        //{
-        //    return await this.repo.GetRefugio(idusuario);
-        //}
-
-        // Ejemplo de endpoint modificado
         [HttpGet("ObtenerRefugio")]
         public async Task<ActionResult<Refugio>> GetObtenerRefugio()
         {
-            var usuario = this.helper.GetUsuario();
-            return await this.repo.GetRefugio(usuario.IdUsuario);
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            return await this.repo.GetRefugio(idUsuario);
         }
 
-        [HttpPost("CrearMascotaRefugio/{idusuario}")]
-        public async Task<ActionResult<bool>> CrearMascotaRefugio([FromBody] Mascota mascota, int idusuario)
+        [HttpPost("CrearMascotaRefugio")]
+        public async Task<ActionResult<bool>> CrearMascotaRefugio([FromBody] Mascota mascota)
         {
-            var resultado = await this.repo.CrearMascotaRefugioAsync(mascota, idusuario);
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            var resultado = await this.repo.CrearMascotaRefugioAsync(mascota, idUsuario);
             return Ok(resultado);
         }
 
@@ -96,25 +89,27 @@ namespace ZuvoPetApiAzure.Controllers
             return await this.repo.DeleteMascotaAsync(idmascota);
         }
 
-        [HttpGet("ObtenerSolicitudesRefugio/{idusuario}")]
+        [HttpGet("ObtenerSolicitudesRefugio")]
         public async Task<ActionResult<List<SolicitudAdopcion>>>
-        GetSolicitudesRefugio(int idusuario)
+        GetSolicitudesRefugio()
         {
-            return await this.repo.GetSolicitudesRefugioAsync(idusuario);
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            return await this.repo.GetSolicitudesRefugioAsync(idUsuario);
         }
 
-        [HttpGet("ObtenerSolicitudesById/{idusuario}/{idsolicitud}")]
+        [HttpGet("ObtenerSolicitudesById/{idsolicitud}")]
         public async Task<ActionResult<SolicitudAdopcion>>
-        GetSolicitudesById(int idusuario, int idsolicitud)
+        GetSolicitudesById(int idsolicitud)
         {
-            return await this.repo.GetSolicitudByIdAsync(idusuario, idsolicitud);
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            return await this.repo.GetSolicitudByIdAsync(idUsuario, idsolicitud);
         }
 
-        [HttpPut("ProcesarSolicitudAdopcion/{idsolicitud}/{nuevoestado}")]
-        public async Task<ActionResult<bool>> 
-        ProcesarSolicitudAdopcion(int idsolicitud, string nuevoestado)
+        [HttpPut("ProcesarSolicitudAdopcion")]
+        public async Task<ActionResult<bool>>
+        ProcesarSolicitudAdopcion([FromBody] SolicitudAdopcionDTO solicitud)
         {
-            return await this.repo.ProcesarSolicitudAdopcionAsync(idsolicitud, nuevoestado);
+            return await this.repo.ProcesarSolicitudAdopcionAsync(solicitud.IdSolicitud, solicitud.NuevoEstado);
         }
 
         [HttpGet("ObtenerDetallesMascota/{idmascota}")]
@@ -138,32 +133,36 @@ namespace ZuvoPetApiAzure.Controllers
             return await this.repo.ObtenerLikeHistoriaAsync(idhistoria);
         }
 
-        [HttpGet("ObtenerLikeUsuarioHistoria/{idhistoria}/{idusuario}")]
+        [HttpGet("ObtenerLikeUsuarioHistoria/{idhistoria}")]
         public async Task<ActionResult<LikeHistoria>>
-        GetLikeUsuarioHistoria(int idhistoria, int idusuario)
+        GetLikeUsuarioHistoria(int idhistoria)
         {
-            return await this.repo.ObtenerLikeUsuarioHistoriaAsync(idhistoria, idusuario);
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            return await this.repo.ObtenerLikeUsuarioHistoriaAsync(idhistoria, idUsuario);
         }
 
-        [HttpDelete("EliminarLikeHistoria/{idhistoria}/{idusuario}")]
+        [HttpDelete("EliminarLikeHistoria/{idhistoria}")]
         public async Task<ActionResult<bool>>
-        DeleteLikeHistoria(int idhistoria, int idusuario)
+        DeleteLikeHistoria(int idhistoria)
         {
-            return await this.repo.EliminarLikeHistoriaAsync(idhistoria, idusuario);
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            return await this.repo.EliminarLikeHistoriaAsync(idhistoria, idUsuario);
         }
 
-        [HttpPost("CrearLikeHistoria/{idhistoria}/{idusuario}/{tiporeaccion}")]
+        [HttpPost("CrearLikeHistoria")]
         public async Task<ActionResult<bool>>
-        CrearLikeHistoria(int idhistoria, int idusuario, string tiporeaccion)
+        CrearLikeHistoria([FromBody] LikeHistoriaDTO like)
         {
-            return await this.repo.CrearLikeHistoriaAsync(idhistoria, idusuario, tiporeaccion);
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            return await this.repo.CrearLikeHistoriaAsync(like.IdHistoria, idUsuario, like.TipoReaccion);
         }
 
-        [HttpPut("ActualizarLikeHistoria/{idhistoria}/{idusuario}/{tiporeaccion}")]
+        [HttpPut("ActualizarLikeHistoria")]
         public async Task<ActionResult<bool>>
-        ActualizarLikeHistoria(int idhistoria, int idusuario, string tiporeaccion)
+        ActualizarLikeHistoria([FromBody] LikeHistoriaDTO like)
         {
-            return await this.repo.ActualizarLikeHistoriaAsync(idhistoria, idusuario, tiporeaccion);
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            return await this.repo.ActualizarLikeHistoriaAsync(like.IdHistoria, idUsuario, like.TipoReaccion);
         }
 
         [HttpGet("ObtenerContadoresReacciones/{idhistoria}")]
@@ -173,150 +172,165 @@ namespace ZuvoPetApiAzure.Controllers
             return await this.repo.ObtenerContadoresReaccionesAsync(idhistoria);
         }
 
-        [HttpGet("ObtenerNotificacionesUsuario/{idusuario}/{pagina}/{tamanopagina}")]
+        [HttpGet("ObtenerNotificacionesUsuario")]
         public async Task<ActionResult<List<Notificacion>>>
-        GetNotificacionesUsuario(int idusuario, int pagina, int tamanopagina)
+        GetNotificacionesUsuario([FromQuery] int pagina = 1, [FromQuery] int tamanopagina = 10)
         {
-            return await this.repo.GetNotificacionesUsuarioAsync(idusuario, pagina, tamanopagina);
+            if (pagina <= 0)
+            {
+                return BadRequest("El número de página debe ser mayor que cero");
+            }
+
+            if (tamanopagina <= 0)
+            {
+                return BadRequest("El tamaño de página debe ser mayor que cero");
+            }
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            return await this.repo.GetNotificacionesUsuarioAsync(idUsuario, pagina, tamanopagina);
         }
 
-        [HttpGet("ObtenerTotalNotificacionesUsuario/{idusuario}")]
+        [HttpGet("ObtenerTotalNotificacionesUsuario")]
         public async Task<ActionResult<int>>
-        GetTotalNotificacionesUsuario(int idusuario)
+        GetTotalNotificacionesUsuario()
         {
-            return await this.repo.GetTotalNotificacionesUsuarioAsync(idusuario);
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            return await this.repo.GetTotalNotificacionesUsuarioAsync(idUsuario);
         }
 
-        [HttpGet("ObtenerTotalNotificacionesNoLeidas/{idusuario}")]
+        [HttpGet("ObtenerTotalNotificacionesNoLeidas")]
         public async Task<ActionResult<int>>
-        GetTotalNotificacionesNoLeidas(int idusuario)
+        GetTotalNotificacionesNoLeidas()
         {
-            return await this.repo.GetTotalNotificacionesNoLeidasAsync(idusuario);
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            return await this.repo.GetTotalNotificacionesNoLeidasAsync(idUsuario);
         }
 
-        [HttpGet("ObtenerNotificacionesNuevasDesde/{idusuario}/{desde}")]
+        [HttpGet("ObtenerNotificacionesNuevasDesde")]
         public async Task<ActionResult<bool>>
-        GetNotificacionesNuevasDesde(int idusuario, DateTime desde)
+        GetNotificacionesNuevasDesde([FromQuery] DateTime desde)
         {
-            return await this.repo.HayNotificacionesNuevasDesdeAsync(idusuario, desde);
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            return await this.repo.HayNotificacionesNuevasDesdeAsync(idUsuario, desde);
         }
 
-        [HttpPut("ActualizarNotificacionComoLeida/{idnotificacion}/{idusuario}")]
+        [HttpPut("ActualizarNotificacionComoLeida/{idnotificacion}")]
         public async Task<ActionResult<bool>>
-        ActualizarNotificacionComoLeida(int idnotificacion, int idusuario)
+        ActualizarNotificacionComoLeida(int idnotificacion)
         {
-            return await this.repo.MarcarNotificacionComoLeidaAsync(idnotificacion, idusuario);
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            return await this.repo.MarcarNotificacionComoLeidaAsync(idnotificacion, idUsuario);
         }
 
-        [HttpPut("ActualizarTodasNotificacionesComoLeidas/{idusuario}")]
+        [HttpPut("ActualizarTodasNotificacionesComoLeidas")]
         public async Task<ActionResult<bool>>
-        ActualizarTodasNotificacionesComoLeidas(int idusuario)
+        ActualizarTodasNotificacionesComoLeidas()
         {
-            return await this.repo.MarcarTodasNotificacionesComoLeidasAsync(idusuario);
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            return await this.repo.MarcarTodasNotificacionesComoLeidasAsync(idUsuario);
         }
 
-        [HttpDelete("EliminarNotificacion/{idnotificacion}/{idusuario}")]
+        [HttpDelete("EliminarNotificacion/{idnotificacion}")]
         public async Task<ActionResult<bool>>
-        EliminarNotificacion(int idnotificacion, int idusuario)
+        EliminarNotificacion(int idnotificacion)
         {
-            return await this.repo.EliminarNotificacionAsync(idnotificacion, idusuario);
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            return await this.repo.EliminarNotificacionAsync(idnotificacion, idUsuario);
         }
 
-        [HttpGet("ObtenerPerfilRefugio/{idusuario}")]
+        [HttpGet("ObtenerPerfilRefugio")]
         public async Task<ActionResult<VistaPerfilRefugio>>
-        GetPerfilRefugio(int idusuario)
+        GetPerfilRefugio()
         {
-            return await this.repo.GetPerfilRefugio(idusuario);
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            return await this.repo.GetPerfilRefugio(idUsuario);
         }
 
-        [HttpGet("ObtenerFotoPerfil/{idusuario}")]
+        [HttpGet("ObtenerFotoPerfil")]
         public async Task<ActionResult<string>>
-        GetFotoPerfil(int idusuario)
+        GetFotoPerfil()
         {
-            return await this.repo.GetFotoPerfilAsync(idusuario);
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            return await this.repo.GetFotoPerfilAsync(idUsuario);
         }
 
-        [HttpGet("ObtenerConversacionesRefugio/{idusuario}")]
+        [HttpGet("ObtenerConversacionesRefugio")]
         public async Task<ActionResult<List<ConversacionViewModel>>>
-        GetConversacionesRefugio(int idusuario)
+        GetConversacionesRefugio()
         {
-            return await this.repo.GetConversacionesRefugioAsync(idusuario);
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            return await this.repo.GetConversacionesRefugioAsync(idUsuario);
         }
 
-        [HttpGet("ObtenerMensajesConversacion/{idusuarioactual}/{idotrousuario}")]
+        [HttpGet("ObtenerMensajesConversacion/{idotrousuario}")]
         public async Task<ActionResult<List<Mensaje>>>
-        GetMensajesConversacion(int idusuarioactual, int idotrousuario)
+        GetMensajesConversacion(int idotrousuario)
         {
-            return await this.repo.GetMensajesConversacionAsync(idusuarioactual, idotrousuario);
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            return await this.repo.GetMensajesConversacionAsync(idUsuario, idotrousuario);
         }
 
-        [HttpPost("CrearMensaje/{idemisor}/{idreceptor}")]
+        [HttpPost("CrearMensaje")]
         public async Task<ActionResult<Mensaje>>
-        CrearMensaje(int idemisor, int idreceptor, [FromBody] string contenido)
+        CrearMensaje([FromBody] MensajeCreacionDTO mensajeDTO)
         {
-            return await this.repo.AgregarMensajeAsync(idemisor, idreceptor, contenido);
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            return await this.repo.AgregarMensajeAsync(idUsuario, mensajeDTO.IdReceptor, mensajeDTO.Contenido);
         }
 
-        [HttpPut("ActualizarDescripcionRefugio/{idusuario}")]
+        [HttpPut("ActualizarDescripcionRefugio")]
         public async Task<ActionResult<bool>>
-        ActualizarDescripcionRefugio(int idusuario, [FromBody] string descripcion)
+        ActualizarDescripcionRefugio([FromBody] string descripcion)
         {
-            return await this.repo.ActualizarDescripcionAsync(idusuario, descripcion);
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            return await this.repo.ActualizarDescripcionAsync(idUsuario, descripcion);
         }
 
-        [HttpPut("ActualizarDetallesRefugio/{idusuario}")]
+        [HttpPut("ActualizarDetallesRefugio")]
         public async Task<ActionResult<bool>> 
-        ActualizarDetallesRefugio(int idusuario, [FromBody] DetallesRefugioDTO datos)
+        ActualizarDetallesRefugio([FromBody] DetallesRefugioDTO datos)
         {
-            return await this.repo.ActualizarDetallesRefugioAsync(
-                idusuario,
-                datos.Contacto,
-                datos.CantidadAnimales,
-                datos.CapacidadMaxima);
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            return await this.repo.ActualizarDetallesRefugioAsync(idUsuario, datos.Contacto, datos.CantidadAnimales, datos.CapacidadMaxima);
         }
 
-        [HttpPut("ActualizarUbicacionRefugio/{idusuario}")]
+        [HttpPut("ActualizarUbicacionRefugio")]
         public async Task<ActionResult<bool>>
-        ActualizarUbicacionRefugio(int idusuario, [FromBody] UbicacionRefugioDTO datos)
+        ActualizarUbicacionRefugio([FromBody] UbicacionRefugioDTO datos)
         {
-            return await this.repo.ActualizarUbicacionRefugioAsync(
-                idusuario,
-                datos.Latitud,
-                datos.Longitud);
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            return await this.repo.ActualizarUbicacionRefugioAsync(idUsuario, datos.Latitud, datos.Longitud);
         }
 
-        [HttpPut("ActualizarPerfilRefugio/{idusuario}")]
+        [HttpPut("ActualizarPerfilRefugio")]
         public async Task<ActionResult<bool>>
-        ActualizarPerfilRefugio(int idusuario, [FromBody] PerfilRefugioDTO datos)
+        ActualizarPerfilRefugio([FromBody] PerfilRefugioDTO datos)
         {
-            return await this.repo.ActualizarPerfilRefugioAsync(
-                idusuario,
-                datos.Email,
-                datos.NombreRefugio,
-                datos.ContactoRefugio);
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            return await this.repo.ActualizarPerfilRefugioAsync(idUsuario, datos.Email, datos.NombreRefugio, datos.ContactoRefugio);
         }
 
-        [HttpPut("ActualizarFotoPerfil/{idusuario}")]
+        [HttpPut("ActualizarFotoPerfil")]
         public async Task<ActionResult<string>>
-        ActualizarFotoPerfil(int idusuario, [FromBody] FotoPerfilDTO datos)
+        ActualizarFotoPerfil([FromBody] FotoPerfilDTO datos)
         {
-            return await this.repo.ActualizarFotoPerfilAsync(
-                idusuario,
-                datos.NombreArchivo);
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            return await this.repo.ActualizarFotoPerfilAsync(idUsuario, datos.NombreArchivo);
         }
 
-        [HttpPut("ActualizarMensajesComoLeidos/{idusuarioactual}/{idotrousuario}")]
+        [HttpPut("ActualizarMensajesComoLeidos/{idotrousuario}")]
         public async Task<ActionResult<bool>>
-        ActualizarMensajesComoLeidos(int idusuarioactual, int idotrousuario)
+        ActualizarMensajesComoLeidos(int idotrousuario)
         {
-            return await this.repo.MarcarMensajesComoLeidosAsync(idusuarioactual, idotrousuario);
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            return await this.repo.MarcarMensajesComoLeidosAsync(idUsuario, idotrousuario);
         }
 
-        [HttpGet("ObtenerAdoptanteByUsuarioId/{idusuario}")]
+        [HttpGet("ObtenerAdoptanteByUsuarioId")]
         public async Task<ActionResult<Adoptante>>
-        GetAdoptanteChatByUsuarioid(int idusuario)
+        GetAdoptanteChatByUsuarioid()
         {
-            return await this.repo.GetAdoptanteChatByUsuarioId(idusuario);
+            int idUsuario = this.helper.GetAuthenticatedUserId();
+            return await this.repo.GetAdoptanteChatByUsuarioId(idUsuario);
         }
     }
 }

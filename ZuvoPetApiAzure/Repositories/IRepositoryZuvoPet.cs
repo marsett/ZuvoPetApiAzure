@@ -1,4 +1,4 @@
-﻿using ZuvoPetNuget;
+﻿using ZuvoPetNuget.Models;
 
 namespace ZuvoPetApiAzure.Repositories
 {

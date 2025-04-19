@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System.Security.Claims;
-using ZuvoPetApiAzure.DTO;
+using ZuvoPetNuget.Dtos;
 
 namespace ZuvoPetApiAzure.Helpers
 {

@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 using System.Security.Claims;
 using ZuvoPetApiAzure.Data;
 using ZuvoPetApiAzure.Helpers;
-using ZuvoPetNuget;
+using ZuvoPetNuget.Models;
 
 namespace ZuvoPetApiAzure.Repositories
 {
