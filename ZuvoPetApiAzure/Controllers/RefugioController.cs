@@ -5,6 +5,9 @@ using ZuvoPetApiAzure.Helpers;
 using ZuvoPetApiAzure.Repositories;
 using ZuvoPetNuget.Models;
 using ZuvoPetNuget.Dtos;
+using ZuvoPetApiAzure.Services;
+using Azure.Storage.Blobs;
+using System.Security.Claims;
 
 namespace ZuvoPetApiAzure.Controllers
 {
@@ -15,10 +18,94 @@ namespace ZuvoPetApiAzure.Controllers
     {
         private IRepositoryZuvoPet repo;
         private HelperUsuarioToken helper;
-        public RefugioController(IRepositoryZuvoPet repo, HelperUsuarioToken helper)
+        private ServiceStorageBlobs storageService;
+        public RefugioController(IRepositoryZuvoPet repo, HelperUsuarioToken helper, ServiceStorageBlobs storageService)
         {
             this.repo = repo;
             this.helper = helper;
+            this.storageService = storageService;
+        }
+
+        [HttpGet("ObtenerFotoPerfilUrl")]
+        public async Task<IActionResult> ObtenerFotoPerfilUrl()
+        {
+            try
+            {
+                // Obtienes el nombre de la foto del usuario actual
+                int idUsuario = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                var refugio = await repo.GetRefugioByUsuarioIdAsync(idUsuario);
+
+                if (refugio != null && !string.IsNullOrEmpty(refugio.Usuario.PerfilUsuario.FotoPerfil))
+                {
+                    // No devuelves solo el nombre, sino la URL completa
+                    string containerName = "zuvopetimagenes";
+                    BlobContainerClient containerClient =
+                        this.storageService.client.GetBlobContainerClient(containerName);
+                    BlobClient blobClient = containerClient.GetBlobClient(refugio.Usuario.PerfilUsuario.FotoPerfil);
+
+                    // Devolver la URL directa del blob
+                    return Ok(blobClient.Uri.AbsoluteUri);
+                }
+
+                return Ok(string.Empty);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensaje = "Error al obtener la URL de la imagen: " + ex.Message });
+            }
+        }
+
+        [HttpGet("imagen/{nombreImagen}")]
+        public async Task<IActionResult> GetImagen(string nombreImagen)
+        {
+            try
+            {
+                // Obtener el cliente del contenedor
+                string containerName = "zuvopetimagenes";
+                BlobContainerClient containerClient =
+                    this.storageService.client.GetBlobContainerClient(containerName);
+
+                // Obtener el cliente del blob
+                BlobClient blobClient = containerClient.GetBlobClient(nombreImagen);
+
+                // Verificar si el blob existe
+                if (!await blobClient.ExistsAsync())
+                {
+                    return NotFound($"Imagen {nombreImagen} no encontrada");
+                }
+
+                // Descargar el blob
+                var response = await blobClient.DownloadAsync();
+                Stream stream = response.Value.Content;
+
+                // Determinar el tipo MIME según la extensión del archivo
+                string contentType = GetContentType(nombreImagen);
+
+                // Devolver la imagen con el tipo MIME apropiado
+                return File(stream, contentType);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensaje = "Error al recuperar la imagen: " + ex.Message });
+            }
+        }
+
+        private string GetContentType(string fileName)
+        {
+            // Obtener la extensión del archivo
+            string extension = Path.GetExtension(fileName).ToLowerInvariant();
+
+            // Asignar la extensión al tipo MIME correspondiente
+            return extension switch
+            {
+                ".jpg" or ".jpeg" => "image/jpeg",
+                ".png" => "image/png",
+                ".gif" => "image/gif",
+                ".bmp" => "image/bmp",
+                ".webp" => "image/webp",
+                ".svg" => "image/svg+xml",
+                _ => "application/octet-stream" // Tipo genérico para archivos desconocidos
+            };
         }
 
         [HttpGet("ObtenerRefugioByUsuarioId")]
