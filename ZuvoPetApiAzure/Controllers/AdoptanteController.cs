@@ -386,9 +386,17 @@ namespace ZuvoPetApiAzure.Controllers
             return await this.repo.GetAdoptanteByUsuarioId(idUsuario);
         }
 
-        [HttpPost("CrearHistoriaExito/{historiaexito}")]
-        public async Task<ActionResult<bool>>
-        CrearHistoriaExito(HistoriaExito historiaexito)
+        //[HttpPost("CrearHistoriaExito/{historiaexito}")]
+        //public async Task<ActionResult<bool>>
+        //CrearHistoriaExito(HistoriaExito historiaexito)
+        //{
+        //    int idUsuario = this.helper.GetAuthenticatedUserId();
+        //    return await this.repo.CrearHistoriaExito(historiaexito, idUsuario);
+        //}
+
+        [HttpPost("CrearHistoriaExito")]
+        public async Task<ActionResult<bool>> 
+        CrearHistoriaExito([FromBody] HistoriaExito historiaexito)
         {
             int idUsuario = this.helper.GetAuthenticatedUserId();
             return await this.repo.CrearHistoriaExito(historiaexito, idUsuario);
