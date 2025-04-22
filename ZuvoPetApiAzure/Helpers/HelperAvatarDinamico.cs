@@ -72,26 +72,6 @@ namespace ***REMOVED***.Helpers
             }
         }
 
-
-        //public static string CrearYGuardarAvatar(string nombreUsuario)
-        //{
-        //    string iniciales = HelperAvatarDinamico.GetIniciales(nombreUsuario);
-        //    byte[] imagenAvatar = HelperAvatarDinamico.GenerarAvatar(iniciales);
-
-        //    string carpetaAvatar = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images");
-
-        //    if (!Directory.Exists(carpetaAvatar))
-        //    {
-        //        Directory.CreateDirectory(carpetaAvatar);
-        //    }
-
-        //    string nombreAvatar = $"{Guid.NewGuid()}.png";
-        //    string nombreArchivo = Path.Combine(carpetaAvatar, nombreAvatar);
-        //    System.IO.File.WriteAllBytes(nombreArchivo, imagenAvatar);
-
-        //    return nombreAvatar;
-        //}
-
         // Modificar este método para usar Azure Blob Storage
         public static async Task<string> CrearYGuardarAvatarEnAzureAsync(string nombreUsuario, ServiceStorageBlobs storageService, string containerName = "zuvopetimagenes")
         {
