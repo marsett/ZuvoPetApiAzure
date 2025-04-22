@@ -26,6 +26,71 @@ namespace ZuvoPetApiAzure.Controllers
             this.storageService = storageService;
         }
 
+        [HttpPost("PostFotoPerfil")]
+        public async Task<IActionResult> PostFotoPerfil(IFormFile archivo)
+        {
+            try
+            {
+                if (archivo == null || archivo.Length == 0)
+                {
+                    return BadRequest(new { mensaje = "No se ha proporcionado ningún archivo" });
+                }
+
+                // Validar tipo de archivo
+                string extension = Path.GetExtension(archivo.FileName).ToLowerInvariant();
+                if (extension != ".jpg" && extension != ".jpeg" && extension != ".png")
+                {
+                    return BadRequest(new { mensaje = "Solo se permiten archivos JPG, JPEG o PNG" });
+                }
+
+                // Obtener el ID del usuario actual
+                int idUsuario = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                var adoptante = await repo.GetAdoptanteByUsuarioIdAsync(idUsuario);
+
+                if (adoptante == null)
+                {
+                    return NotFound(new { mensaje = "Adoptante no encontrado" });
+                }
+
+                // Nombre actual de la foto
+                string oldFotoName = adoptante.Usuario.PerfilUsuario.FotoPerfil;
+
+                // Generar un nuevo nombre único para el archivo
+                string newFotoName = $"{Guid.NewGuid()}{extension}";
+                string containerName = "zuvopetimagenes";
+
+                // Procesar y subir archivo
+                using (Stream stream = archivo.OpenReadStream())
+                {
+                    // Actualizar el blob, eliminando el anterior
+                    await this.storageService.UpdateBlobAsync(containerName, oldFotoName, newFotoName, stream);
+                }
+
+                // Actualizar la referencia en la base de datos
+                bool updated = await this.repo.ActualizarFotoPerfilAdoptante(idUsuario, newFotoName);
+
+                if (!updated)
+                {
+                    return StatusCode(500, new { mensaje = "Error al actualizar la referencia en la base de datos" });
+                }
+
+                // Obtener la URL del nuevo blob
+                BlobContainerClient containerClient = this.storageService.client.GetBlobContainerClient(containerName);
+                BlobClient blobClient = containerClient.GetBlobClient(newFotoName);
+
+                return Ok(new
+                {
+                    mensaje = "Foto de perfil actualizada correctamente",
+                    fotoUrl = blobClient.Uri.AbsoluteUri,
+                    nombreFoto = newFotoName
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensaje = "Error al actualizar la foto de perfil: " + ex.Message });
+            }
+        }
+
         [HttpGet("ObtenerFotoPerfilUrl")]
         public async Task<IActionResult> ObtenerFotoPerfilUrl()
         {

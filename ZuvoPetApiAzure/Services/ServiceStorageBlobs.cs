@@ -64,5 +64,23 @@ namespace ZuvoPetApiAzure.Services
             BlobContainerClient containerClient = this.client.GetBlobContainerClient(containerName);
             await containerClient.UploadBlobAsync(blobName, stream);
         }
+
+        public async Task UpdateBlobAsync(string containerName, string oldBlobName, string newBlobName, Stream stream)
+        {
+            BlobContainerClient containerClient = this.client.GetBlobContainerClient(containerName);
+
+            // Subir el nuevo blob
+            await containerClient.UploadBlobAsync(newBlobName, stream);
+
+            // Eliminar el blob antiguo si existe y es diferente del nuevo
+            if (!string.IsNullOrEmpty(oldBlobName) && oldBlobName != newBlobName)
+            {
+                BlobClient oldBlobClient = containerClient.GetBlobClient(oldBlobName);
+                if (await oldBlobClient.ExistsAsync())
+                {
+                    await oldBlobClient.DeleteAsync();
+                }
+            }
+        }
     }
 }

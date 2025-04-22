@@ -1460,7 +1460,10 @@ namespace ZuvoPetApiAzure.Repositories
 
         public async Task<Adoptante> GetAdoptanteByUsuarioIdAsync(int idUsuario)
         {
-            return await this.context.Adoptantes.FirstOrDefaultAsync(a => a.IdUsuario == idUsuario);
+            return await this.context.Adoptantes.
+                Include(a => a.Usuario)
+               .Include(a => a.Usuario.PerfilUsuario)
+               .FirstOrDefaultAsync(a => a.IdUsuario == idUsuario);
         }
 
 
