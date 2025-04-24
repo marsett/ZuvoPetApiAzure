@@ -1481,11 +1481,11 @@ namespace ZuvoPetApiAzure.Repositories
                 .FirstOrDefaultAsync(r => r.Id == refugioId);
         }
 
-        public async Task<Refugio> GetRefugioChatDosByIdAsync(int idusuario)
+        public async Task<Refugio> GetRefugioChatDosByIdAsync(int idusuariorefugio)
         {
             return await this.context.Refugios
                 .Include(refugio => refugio.Usuario.PerfilUsuario)
-                .FirstOrDefaultAsync(r => r.IdUsuario == idusuario);
+                .FirstOrDefaultAsync(r => r.IdUsuario == idusuariorefugio);
         }
     }
 }

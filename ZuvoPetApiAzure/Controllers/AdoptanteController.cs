@@ -26,6 +26,50 @@ namespace ZuvoPetApiAzure.Controllers
             this.storageService = storageService;
         }
 
+        [HttpPost("SubirImagen")]
+        public async Task<IActionResult> SubirImagen(IFormFile archivo)
+        {
+            try
+            {
+                if (archivo == null || archivo.Length == 0)
+                {
+                    return BadRequest(new { mensaje = "No se ha proporcionado ningún archivo" });
+                }
+
+                // Validar tipo de archivo
+                string extension = Path.GetExtension(archivo.FileName).ToLowerInvariant();
+                if (extension != ".jpg" && extension != ".jpeg" && extension != ".png")
+                {
+                    return BadRequest(new { mensaje = "Solo se permiten archivos JPG, JPEG o PNG" });
+                }
+
+                // Generar un nuevo nombre único para el archivo
+                string blobName = $"{Guid.NewGuid()}{extension}";
+                string containerName = "zuvopetimagenes";
+
+                // Procesar y subir archivo
+                using (Stream stream = archivo.OpenReadStream())
+                {
+                    await this.storageService.UploadBlobAsync(containerName, blobName, stream);
+                }
+
+                // Obtener la URL del nuevo blob
+                BlobContainerClient containerClient = this.storageService.client.GetBlobContainerClient(containerName);
+                BlobClient blobClient = containerClient.GetBlobClient(blobName);
+
+                return Ok(new
+                {
+                    mensaje = "Imagen subida correctamente",
+                    fotoUrl = blobClient.Uri.AbsoluteUri,
+                    nombreFoto = blobName
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensaje = "Error al subir la imagen: " + ex.Message });
+            }
+        }
+
         [HttpPost("PostFotoPerfil")]
         public async Task<IActionResult> PostFotoPerfil(IFormFile archivo)
         {
@@ -173,6 +217,7 @@ namespace ZuvoPetApiAzure.Controllers
             };
         }
 
+        
 
         [HttpGet("ObtenerMascotasDestacadas")]
         public async Task<ActionResult<List<MascotaCard>>>
@@ -461,9 +506,18 @@ namespace ZuvoPetApiAzure.Controllers
 
         [HttpPost("CrearHistoriaExito")]
         public async Task<ActionResult<bool>> 
-        CrearHistoriaExito([FromBody] HistoriaExito historiaexito)
+        CrearHistoriaExito([FromBody] HistoriaExitoCreacionDTO dto)
         {
             int idUsuario = this.helper.GetAuthenticatedUserId();
+            HistoriaExito historiaexito = new HistoriaExito
+            {
+                IdMascota = dto.IdMascota,
+                Titulo = dto.Titulo,
+                Descripcion = dto.Descripcion,
+                Foto = dto.Foto,
+                FechaPublicacion = DateTime.Now,
+                Estado = "Aprobada"
+            };
             return await this.repo.CrearHistoriaExito(historiaexito, idUsuario);
         }
 
@@ -561,12 +615,11 @@ namespace ZuvoPetApiAzure.Controllers
             return await this.repo.GetRefugioChatByIdAsync(idrefugio);
         }
 
-        [HttpGet("ObtenerRefugioChatDosById")]
+        [HttpGet("ObtenerRefugioChatDosById/{idusuariorefugio}")]
         public async Task<ActionResult<Refugio>>
-        GetRefugioChatDosById()
+        GetRefugioChatDosById(int idusuariorefugio)
         {
-            int idUsuario = this.helper.GetAuthenticatedUserId();
-            return await this.repo.GetRefugioChatDosByIdAsync(idUsuario);
+            return await this.repo.GetRefugioChatDosByIdAsync(idusuariorefugio);
         }
     }
 }
