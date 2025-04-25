@@ -103,5 +103,8 @@ namespace ZuvoPetApiAzure.Repositories
         Task<Adoptante> GetAdoptanteByUsuarioIdAsync(int idUsuario);
         Task<Refugio> GetRefugioChatByIdAsync(int refugioId);
         Task<Refugio> GetRefugioChatDosByIdAsync(int idusuario);
+
+
+        Task<bool> ActualizarFotoMascota(int idMascota, string nuevaFoto);
     }
 }

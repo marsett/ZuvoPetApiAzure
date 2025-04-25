@@ -1437,6 +1437,25 @@ namespace ZuvoPetApiAzure.Repositories
             }
         }
 
+        public async Task<bool> ActualizarFotoMascota(int idMascota, string nuevaFoto)
+        {
+            try
+            {
+                Mascota mascota = await this.context.Mascotas.FindAsync(idMascota);
+                if (mascota != null)
+                {
+                    mascota.Foto = nuevaFoto;
+                    await this.context.SaveChangesAsync();
+                    return true;
+                }
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         public async Task<bool> IncrementarVistasMascota(int idMascota)
         {
             try

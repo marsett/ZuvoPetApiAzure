@@ -26,6 +26,216 @@ namespace ZuvoPetApiAzure.Controllers
             this.storageService = storageService;
         }
 
+        [HttpDelete("DeleteFotoMascota")]
+        public async Task<IActionResult> DeleteFotoMascota([FromQuery] string nombreFoto)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(nombreFoto))
+                {
+                    return BadRequest(new { mensaje = "Nombre de archivo no proporcionado" });
+                }
+
+                string containerName = "zuvopetimagenes";
+
+                try
+                {
+                    // Llamar al método sin capturar un resultado booleano
+                    await this.storageService.DeleteBlobAsync(containerName, nombreFoto);
+
+                    // Si llegamos aquí, asumimos que la operación fue exitosa
+                    return Ok(new
+                    {
+                        mensaje = "Foto de mascota eliminada correctamente"
+                    });
+                }
+                catch (Exception storageEx)
+                {
+                    return StatusCode(500, new { mensaje = "Error al eliminar la imagen del almacenamiento: " + storageEx.Message });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensaje = "Error al eliminar la foto de mascota: " + ex.Message });
+            }
+        }
+
+        [HttpPost("PostFotoMascota")]
+        public async Task<IActionResult> PostFotoMascota(IFormFile archivo, [FromQuery] int idMascota)
+        {
+            try
+            {
+                if (archivo == null || archivo.Length == 0)
+                {
+                    return BadRequest(new { mensaje = "No se ha proporcionado ningún archivo" });
+                }
+
+                // Validar tipo de archivo
+                string extension = Path.GetExtension(archivo.FileName).ToLowerInvariant();
+                if (extension != ".jpg" && extension != ".jpeg" && extension != ".png")
+                {
+                    return BadRequest(new { mensaje = "Solo se permiten archivos JPG, JPEG o PNG" });
+                }
+
+                // Obtener el ID del usuario actual
+                int idUsuario = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+                // Verificar que la mascota existe y pertenece al refugio del usuario
+                var mascota = await repo.GetMascotaByIdAsync(idMascota);
+                if (mascota == null)
+                {
+                    return NotFound(new { mensaje = "Mascota no encontrada" });
+                }
+
+                var refugio = await repo.GetRefugioByUsuarioIdAsync(idUsuario);
+                if (refugio == null || mascota.IdRefugio != refugio.Id)
+                {
+                    return Forbid();
+                }
+
+                // Nombre actual de la foto
+                string oldFotoName = mascota.Foto;
+
+                // Generar un nuevo nombre único para el archivo
+                string newFotoName = $"{Guid.NewGuid()}{extension}";
+                string containerName = "zuvopetimagenes";
+
+                // Procesar y subir archivo
+                using (Stream stream = archivo.OpenReadStream())
+                {
+                    // Actualizar el blob, eliminando el anterior
+                    await this.storageService.UpdateBlobAsync(containerName, oldFotoName, newFotoName, stream);
+                }
+
+                // Actualizar la referencia en la base de datos
+                bool updated = await this.repo.ActualizarFotoMascota(idMascota, newFotoName);
+                if (!updated)
+                {
+                    return StatusCode(500, new { mensaje = "Error al actualizar la referencia en la base de datos" });
+                }
+
+                // Obtener la URL del nuevo blob
+                BlobContainerClient containerClient = this.storageService.client.GetBlobContainerClient(containerName);
+                BlobClient blobClient = containerClient.GetBlobClient(newFotoName);
+
+                return Ok(new
+                {
+                    mensaje = "Foto de mascota actualizada correctamente",
+                    fotoUrl = blobClient.Uri.AbsoluteUri,
+                    nombreFoto = newFotoName
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensaje = "Error al actualizar la foto de mascota: " + ex.Message });
+            }
+        }
+
+        [HttpPost("SubirImagen")]
+        public async Task<IActionResult> SubirImagen(IFormFile archivo)
+        {
+            try
+            {
+                if (archivo == null || archivo.Length == 0)
+                {
+                    return BadRequest(new { mensaje = "No se ha proporcionado ningún archivo" });
+                }
+
+                // Validar tipo de archivo
+                string extension = Path.GetExtension(archivo.FileName).ToLowerInvariant();
+                if (extension != ".jpg" && extension != ".jpeg" && extension != ".png")
+                {
+                    return BadRequest(new { mensaje = "Solo se permiten archivos JPG, JPEG o PNG" });
+                }
+
+                // Generar un nuevo nombre único para el archivo
+                string blobName = $"{Guid.NewGuid()}{extension}";
+                string containerName = "zuvopetimagenes";
+
+                // Procesar y subir archivo
+                using (Stream stream = archivo.OpenReadStream())
+                {
+                    await this.storageService.UploadBlobAsync(containerName, blobName, stream);
+                }
+
+                // Obtener la URL del nuevo blob
+                BlobContainerClient containerClient = this.storageService.client.GetBlobContainerClient(containerName);
+                BlobClient blobClient = containerClient.GetBlobClient(blobName);
+
+                return Ok(new
+                {
+                    mensaje = "Imagen subida correctamente",
+                    fotoUrl = blobClient.Uri.AbsoluteUri,
+                    nombreFoto = blobName
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensaje = "Error al subir la imagen: " + ex.Message });
+            }
+        }
+
+        [HttpPost("PostFotoPerfil")]
+        public async Task<IActionResult> PostFotoPerfil(IFormFile archivo)
+        {
+            try
+            {
+                if (archivo == null || archivo.Length == 0)
+                {
+                    return BadRequest(new { mensaje = "No se ha proporcionado ningún archivo" });
+                }
+
+                // Validar tipo de archivo
+                string extension = Path.GetExtension(archivo.FileName).ToLowerInvariant();
+                if (extension != ".jpg" && extension != ".jpeg" && extension != ".png")
+                {
+                    return BadRequest(new { mensaje = "Solo se permiten archivos JPG, JPEG o PNG" });
+                }
+
+                // Obtener el ID del usuario actual
+                int idUsuario = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+                var refugio = await repo.GetRefugioByUsuarioIdAsync(idUsuario);
+
+                if (refugio == null)
+                {
+                    return NotFound(new { mensaje = "Refugio no encontrado" });
+                }
+
+                // Nombre actual de la foto
+                string oldFotoName = refugio.Usuario.PerfilUsuario.FotoPerfil;
+
+                // Generar un nuevo nombre único para el archivo
+                string newFotoName = $"{Guid.NewGuid()}{extension}";
+                string containerName = "zuvopetimagenes";
+
+                // Procesar y subir archivo
+                using (Stream stream = archivo.OpenReadStream())
+                {
+                    // Actualizar el blob, eliminando el anterior
+                    await this.storageService.UpdateBlobAsync(containerName, oldFotoName, newFotoName, stream);
+                }
+
+                // Actualizar la referencia en la base de datos
+                await this.repo.ActualizarFotoPerfilAsync(idUsuario, newFotoName);
+
+
+                // Obtener la URL del nuevo blob
+                BlobContainerClient containerClient = this.storageService.client.GetBlobContainerClient(containerName);
+                BlobClient blobClient = containerClient.GetBlobClient(newFotoName);
+
+                return Ok(new
+                {
+                    mensaje = "Foto de perfil actualizada correctamente",
+                    fotoUrl = blobClient.Uri.AbsoluteUri,
+                    nombreFoto = newFotoName
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { mensaje = "Error al actualizar la foto de perfil: " + ex.Message });
+            }
+        }
+
         [HttpGet("ObtenerFotoPerfilUrl")]
         public async Task<IActionResult> ObtenerFotoPerfilUrl()
         {
@@ -412,12 +622,11 @@ namespace ZuvoPetApiAzure.Controllers
             return await this.repo.MarcarMensajesComoLeidosAsync(idUsuario, idotrousuario);
         }
 
-        [HttpGet("ObtenerAdoptanteByUsuarioId")]
+        [HttpGet("ObtenerAdoptanteByUsuarioId/{idusuarioadoptante}")]
         public async Task<ActionResult<Adoptante>>
-        GetAdoptanteChatByUsuarioid()
+        GetAdoptanteChatByUsuarioid(int idusuarioadoptante)
         {
-            int idUsuario = this.helper.GetAuthenticatedUserId();
-            return await this.repo.GetAdoptanteChatByUsuarioId(idUsuario);
+            return await this.repo.GetAdoptanteChatByUsuarioId(idusuarioadoptante);
         }
     }
 }
