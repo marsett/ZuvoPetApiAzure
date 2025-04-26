@@ -10,11 +10,11 @@ namespace ZuvoPetApiAzure.Helpers
         public string Issuer { get; set; }
         public string Audience { get; set; }
         public string SecretKey { get; set; }
-        public HelperActionServicesOAuth(IConfiguration configuration)
+        public HelperActionServicesOAuth(string issuer, string audience, string secretKey)
         {
-            this.Issuer = configuration.GetValue<string>("ZuvoPetApiAzureToken:Issuer");
-            this.Audience = configuration.GetValue<string>("ZuvoPetApiAzureToken:Audience");
-            this.SecretKey = configuration.GetValue<string>("ZuvoPetApiAzureToken:SecretKey");
+            this.Issuer = issuer;
+            this.Audience = audience;
+            this.SecretKey = secretKey;
         }
         // Necesitamos un método para generar el token
         // dicho token se basa en nuestro secret key

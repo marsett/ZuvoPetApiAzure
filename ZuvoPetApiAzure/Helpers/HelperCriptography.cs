@@ -5,32 +5,26 @@ namespace ZuvoPetApiAzure.Helpers
 {
     public class HelperCriptography
     {
-        private static IConfiguration configuration;
-        private static string keyCifrado;
-        public static void Initialize(IConfiguration config)
+        private static string salt;
+        private static int iterate;
+        private static string key;
+        public static void Initialize(string saltValue, string iterateValue, string keyValue)
         {
-            configuration = config;
-            keyCifrado = configuration.GetValue<string>("ZuvoPetAzureApi:CryptoKey");
+            salt = saltValue;
+            iterate = int.Parse(iterateValue);
+            key = keyValue;
         }
 
         public static string EncryptString(String dato)
         {
-            var saltconf = configuration.GetValue<string>("Crypto:Salt");
-            var bucleconf = configuration.GetValue<string>("Crypto:Iterate");
-            string password = configuration.GetValue<string>("Crypto:Key");
-            byte[] saltpassword = EncriptarPasswordSalt
-                (password, saltconf, int.Parse(bucleconf));
+            byte[] saltpassword = EncriptarPasswordSalt(key, salt, iterate);
             String res = EncryptString(saltpassword, dato);
             return res;
         }
 
         public static string DecryptString(String dato)
         {
-            var saltconf = configuration.GetValue<string>("Crypto:Salt");
-            var bucleconf = configuration.GetValue<string>("Crypto:Iterate");
-            string password = configuration.GetValue<string>("Crypto:Key");
-            byte[] saltpassword = EncriptarPasswordSalt
-                (password, saltconf, int.Parse(bucleconf));
+            byte[] saltpassword = EncriptarPasswordSalt(key, salt, iterate);
             String res = DecryptString(saltpassword, dato);
             return res;
         }

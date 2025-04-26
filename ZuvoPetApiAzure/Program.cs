@@ -6,12 +6,41 @@ using Scalar.AspNetCore;
 using ZuvoPetApiAzure.Helpers;
 using Azure.Storage.Blobs;
 using ZuvoPetApiAzure.Services;
+using Microsoft.Extensions.Azure;
+using Azure.Security.KeyVault.Secrets;
 
 var builder = WebApplication.CreateBuilder(args);
 
-HelperCriptography.Initialize(builder.Configuration);
+builder.Services.AddAzureClients(factory =>
+{
+    factory.AddSecretClient
+    (builder.Configuration.GetSection("KeyVault"));
+});
+
+SecretClient secretClient = builder.Services.BuildServiceProvider().GetRequiredService<SecretClient>();
+
+KeyVaultSecret secretConnectionString = await secretClient.GetSecretAsync("SqlZuvoPet");
+KeyVaultSecret secretStorageAccount = await secretClient.GetSecretAsync("StorageAccount");
+
+KeyVaultSecret secretAudience = await secretClient.GetSecretAsync("Audience");
+KeyVaultSecret secretIssuer = await secretClient.GetSecretAsync("Issuer");
+KeyVaultSecret secretIterate = await secretClient.GetSecretAsync("Iterate");
+KeyVaultSecret secretKey = await secretClient.GetSecretAsync("Key");
+KeyVaultSecret secretSalt = await secretClient.GetSecretAsync("Salt");
+KeyVaultSecret secretSecretKey = await secretClient.GetSecretAsync("SecretKey");
+
+HelperCriptography.Initialize(
+    secretSalt.Value,
+    secretIterate.Value,
+    secretKey.Value
+);
 builder.Services.AddHttpContextAccessor();
-HelperActionServicesOAuth helper = new HelperActionServicesOAuth(builder.Configuration);
+
+HelperActionServicesOAuth helper = new HelperActionServicesOAuth(
+    secretIssuer.Value,
+    secretAudience.Value,
+    secretSecretKey.Value
+);
 builder.Services.AddSingleton<HelperActionServicesOAuth>(helper);
 builder.Services.AddSingleton<ServiceStorageBlobs>();
 builder.Services.AddScoped<HelperUsuarioToken>();
@@ -19,12 +48,12 @@ builder.Services.AddAuthentication(helper.GetAuthenticateSchema())
     .AddJwtBearer(helper.GetJwtBearerOptions());
 // Add services to the container.
 
-string azureKeys = builder.Configuration.GetValue<string>("AzureKeys:StorageAccount");
+string azureKeys = secretStorageAccount.Value;
 BlobServiceClient blobServiceClient = new BlobServiceClient(azureKeys);
 builder.Services.AddTransient<BlobServiceClient>(x => blobServiceClient);
 
 string connectionString =
-    builder.Configuration.GetConnectionString("ZuvoPet");
+    secretConnectionString.Value;
 builder.Services.AddTransient<IRepositoryZuvoPet, RepositoryZuvoPet>();
 builder.Services.AddDbContext<ZuvoPetContext>
     (options => options.UseSqlServer(connectionString));
