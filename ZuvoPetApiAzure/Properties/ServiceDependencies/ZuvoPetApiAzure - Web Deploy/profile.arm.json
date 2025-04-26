@@ -1,5 +1,5 @@
 {
-  "$schema": "https://schema.management.azure.com/schemas/***REMOVED***018-05-01/subscriptionDeploymentTemplate.json#",
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "metadata": {
     "_dependencyType": "compute.appService.windows"
@@ -21,7 +21,7 @@
     },
     "resourceName": {
       "type": "string",
-      "defaultValue": "***REMOVED***",
+      "defaultValue": "ZuvoPetApiAzure",
       "metadata": {
         "description": "Name of the main resource to be created by this template."
       }
@@ -43,27 +43,27 @@
       "type": "Microsoft.Resources/resourceGroups",
       "name": "[parameters('resourceGroupName')]",
       "location": "[parameters('resourceGroupLocation')]",
-      "apiVersion": "***REMOVED***019-10-01"
+      "apiVersion": "2019-10-01"
     },
     {
       "type": "Microsoft.Resources/deployments",
       "name": "[concat(parameters('resourceGroupName'), 'Deployment', uniqueString(concat(parameters('resourceName'), subscription().subscriptionId)))]",
       "resourceGroup": "[parameters('resourceGroupName')]",
-      "apiVersion": "***REMOVED***019-10-01",
+      "apiVersion": "2019-10-01",
       "dependsOn": [
         "[parameters('resourceGroupName')]"
       ],
       "properties": {
         "mode": "Incremental",
         "template": {
-          "$schema": "http://schema.management.azure.com/schemas/***REMOVED***015-01-01/deploymentTemplate.json#",
+          "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
           "contentVersion": "1.0.0.0",
           "resources": [
             {
               "location": "[parameters('resourceLocation')]",
               "name": "[parameters('resourceName')]",
               "type": "Microsoft.Web/sites",
-              "apiVersion": "***REMOVED***015-08-01",
+              "apiVersion": "2015-08-01",
               "tags": {
                 "[concat('hidden-related:', variables('appServicePlan_ResourceId'))]": "empty"
               },
@@ -94,7 +94,7 @@
               "location": "[parameters('resourceLocation')]",
               "name": "[variables('appServicePlan_name')]",
               "type": "Microsoft.Web/serverFarms",
-              "apiVersion": "***REMOVED***015-08-01",
+              "apiVersion": "2015-08-01",
               "sku": {
                 "name": "S1",
                 "tier": "Standard",

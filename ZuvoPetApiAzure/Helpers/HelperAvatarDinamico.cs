@@ -1,8 +1,8 @@
 ﻿using System.Drawing;
 using System.Drawing.Imaging;
-using ***REMOVED***.Services;
+using ZuvoPetApiAzure.Services;
 
-namespace ***REMOVED***.Helpers
+namespace ZuvoPetApiAzure.Helpers
 {
     public class HelperAvatarDinamico
     {
@@ -15,7 +15,7 @@ namespace ***REMOVED***.Helpers
             {
                 iniciales += char.ToUpper(palabra[0]);
 
-                if (iniciales.Length == ***REMOVED***) break;
+                if (iniciales.Length == 2) break;
             }
 
             return iniciales;
@@ -39,8 +39,8 @@ namespace ***REMOVED***.Helpers
 
                 SizeF tamano = g.MeasureString(iniciales, fuente);
 
-                float x = (ancho - tamano.Width) / ***REMOVED***;
-                float y = (alto - tamano.Height) / ***REMOVED***;
+                float x = (ancho - tamano.Width) / 2;
+                float y = (alto - tamano.Height) / 2;
 
                 g.DrawString(iniciales, fuente, textoBlanco, x, y);
             }
@@ -58,10 +58,10 @@ namespace ***REMOVED***.Helpers
             while (true)
             {
                 // Generar un color aleatorio
-                Color color = Color.FromArgb(rand.Next(100, ***REMOVED***56), rand.Next(100, ***REMOVED***56), rand.Next(100, ***REMOVED***56));
+                Color color = Color.FromArgb(rand.Next(100, 256), rand.Next(100, 256), rand.Next(100, 256));
 
                 // Calcular la luminosidad perceptual
-                double luminosidad = (0.***REMOVED***99 * color.R + 0.587 * color.G + 0.114 * color.B) / ***REMOVED***55;
+                double luminosidad = (0.299 * color.R + 0.587 * color.G + 0.114 * color.B) / 255;
 
                 // Calcular el contraste con el texto blanco (#FFFFFF)
                 double contrasteBlanco = Math.Abs(1.0 - luminosidad);

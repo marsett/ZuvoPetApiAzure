@@ -1,36 +1,30 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace ***REMOVED***.Helpers
+namespace ZuvoPetApiAzure.Helpers
 {
     public class HelperCriptography
     {
-        private static IConfiguration configuration;
-        private static string keyCifrado;
-        public static void Initialize(IConfiguration config)
+        private static string salt;
+        private static int iterate;
+        private static string key;
+        public static void Initialize(string saltValue, string iterateValue, string keyValue)
         {
-            configuration = config;
-            keyCifrado = configuration.GetValue<string>("ZuvoPetAzureApi:CryptoKey");
+            salt = saltValue;
+            iterate = int.Parse(iterateValue);
+            key = keyValue;
         }
 
         public static string EncryptString(String dato)
         {
-            var saltconf = configuration.GetValue<string>("Crypto:Salt");
-            var bucleconf = configuration.GetValue<string>("Crypto:Iterate");
-            string password = configuration.GetValue<string>("Crypto:Key");
-            byte[] saltpassword = EncriptarPasswordSalt
-                (password, saltconf, int.Parse(bucleconf));
+            byte[] saltpassword = EncriptarPasswordSalt(key, salt, iterate);
             String res = EncryptString(saltpassword, dato);
             return res;
         }
 
         public static string DecryptString(String dato)
         {
-            var saltconf = configuration.GetValue<string>("Crypto:Salt");
-            var bucleconf = configuration.GetValue<string>("Crypto:Iterate");
-            string password = configuration.GetValue<string>("Crypto:Key");
-            byte[] saltpassword = EncriptarPasswordSalt
-                (password, saltconf, int.Parse(bucleconf));
+            byte[] saltpassword = EncriptarPasswordSalt(key, salt, iterate);
             String res = DecryptString(saltpassword, dato);
             return res;
         }
@@ -70,9 +64,9 @@ namespace ***REMOVED***.Helpers
             //REALIZAMOS LA COMBINACION DE ENCRIPTADO
             //CON SU SALT
             string textocompleto = contenido + salt;
-            //DECLARAMOS EL OBJETO SHA***REMOVED***56
-            //SHA***REMOVED***56Managed objsha = new SHA***REMOVED***56Managed();
-            SHA***REMOVED***56 objsha = SHA***REMOVED***56.Create();
+            //DECLARAMOS EL OBJETO SHA256
+            //SHA256Managed objsha = new SHA256Managed();
+            SHA256 objsha = SHA256.Create();
             byte[] bytesalida = null;
 
             try
@@ -123,12 +117,12 @@ namespace ***REMOVED***.Helpers
 
             //for (int i = 1; i <= 50; i++)
             //{
-            //    int aleat = random.Next(1, ***REMOVED***55);
+            //    int aleat = random.Next(1, 255);
             //    char letra = Convert.ToChar(aleat);
             //    salt += letra;
             //}
             //return salt;
-            byte[] saltBytes = new byte[3***REMOVED***]; // 3***REMOVED*** bytes = ***REMOVED***56 bits de seguridad
+            byte[] saltBytes = new byte[32]; // 32 bytes = 256 bits de seguridad
             using (var rng = new RNGCryptoServiceProvider())
             {
                 rng.GetBytes(saltBytes);
@@ -159,7 +153,7 @@ namespace ***REMOVED***.Helpers
         public static byte[] EncryptPassword(string password, string salt)
         {
             string contenido = password + salt;
-            SHA51***REMOVED*** managed = SHA51***REMOVED***.Create();
+            SHA512 managed = SHA512.Create();
 
             byte[] salida = Encoding.UTF8.GetBytes(contenido);
 

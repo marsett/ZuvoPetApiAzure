@@ -3,18 +3,18 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-namespace ***REMOVED***.Helpers
+namespace ZuvoPetApiAzure.Helpers
 {
     public class HelperActionServicesOAuth
     {
         public string Issuer { get; set; }
         public string Audience { get; set; }
         public string SecretKey { get; set; }
-        public HelperActionServicesOAuth(IConfiguration configuration)
+        public HelperActionServicesOAuth(string issuer, string audience, string secretKey)
         {
-            this.Issuer = configuration.GetValue<string>("***REMOVED***Token:Issuer");
-            this.Audience = configuration.GetValue<string>("***REMOVED***Token:Audience");
-            this.SecretKey = configuration.GetValue<string>("***REMOVED***Token:SecretKey");
+            this.Issuer = issuer;
+            this.Audience = audience;
+            this.SecretKey = secretKey;
         }
         // Necesitamos un método para generar el token
         // dicho token se basa en nuestro secret key

@@ -2,7 +2,7 @@
 using System.Security.Claims;
 using ZuvoPetNuget.Dtos;
 
-namespace ***REMOVED***.Helpers
+namespace ZuvoPetApiAzure.Helpers
 {
     public class HelperUsuarioToken
     {

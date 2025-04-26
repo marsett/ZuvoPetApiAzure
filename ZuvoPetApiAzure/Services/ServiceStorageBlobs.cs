@@ -2,7 +2,7 @@
 using Azure.Storage.Blobs;
 using ZuvoPetNuget.Models;
 
-namespace ***REMOVED***.Services
+namespace ZuvoPetApiAzure.Services
 {
     public class ServiceStorageBlobs
     {

@@ -3,13 +3,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using ***REMOVED***.Helpers;
-using ***REMOVED***.Repositories;
-using ***REMOVED***.Services;
+using ZuvoPetApiAzure.Helpers;
+using ZuvoPetApiAzure.Repositories;
+using ZuvoPetApiAzure.Services;
 using ZuvoPetNuget.Dtos;
 using ZuvoPetNuget.Models;
 
-namespace ***REMOVED***.Controllers
+namespace ZuvoPetApiAzure.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

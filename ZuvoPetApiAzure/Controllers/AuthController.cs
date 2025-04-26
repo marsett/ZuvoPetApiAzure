@@ -5,14 +5,14 @@ using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using ***REMOVED***.Helpers;
-using ***REMOVED***.Repositories;
+using ZuvoPetApiAzure.Helpers;
+using ZuvoPetApiAzure.Repositories;
 using ZuvoPetNuget.Models;
 using ZuvoPetNuget.Dtos;
-using ***REMOVED***.Services;
+using ZuvoPetApiAzure.Services;
 using Azure.Storage.Blobs;
 
-namespace ***REMOVED***.Controllers
+namespace ZuvoPetApiAzure.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -125,7 +125,7 @@ namespace ***REMOVED***.Controllers
                 // Crear credenciales para el token
                 SigningCredentials credentials = new SigningCredentials(
                     this.helper.GetKeyToken(),
-                    SecurityAlgorithms.HmacSha***REMOVED***56);
+                    SecurityAlgorithms.HmacSha256);
 
                 // Crear el modelo de usuario para el token
                 UsuarioTokenDTO modelUsuario = new UsuarioTokenDTO
@@ -155,7 +155,7 @@ namespace ***REMOVED***.Controllers
                     audience: this.helper.Audience,
                     claims: claims,
                     signingCredentials: credentials,
-                    expires: DateTime.UtcNow.AddHours(***REMOVED***),
+                    expires: DateTime.UtcNow.AddHours(2),
                     notBefore: DateTime.UtcNow);
 
                 // Devolver el token junto con información básica del usuario

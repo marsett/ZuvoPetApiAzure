@@ -23,7 +23,7 @@ mono_crash.*
 [Rr]eleases/
 x64/
 x86/
-[Ww][Ii][Nn]3***REMOVED***/
+[Ww][Ii][Nn]32/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
 bld/
@@ -33,12 +33,12 @@ bld/
 [Ll]og/
 [Ll]ogs/
 
-# Visual Studio ***REMOVED***015/***REMOVED***017 cache/options directory
+# Visual Studio 2015/2017 cache/options directory
 .vs/
 # Uncomment if you have tasks that create the project's static files in wwwroot
 #wwwroot/
 
-# Visual Studio ***REMOVED***017 auto generated files
+# Visual Studio 2017 auto generated files
 Generated\ Files/
 
 # MSTest test Results
@@ -119,9 +119,9 @@ ipch/
 *.sap
 
 # Visual Studio Trace Files
-*.e***REMOVED***e
+*.e2e
 
-# TFS ***REMOVED***01***REMOVED*** Local Workspace
+# TFS 2012 Local Workspace
 $tf/
 
 # Guidance Automation Toolkit
@@ -173,7 +173,7 @@ DocProject/Help/*.HxC
 DocProject/Help/*.hhc
 DocProject/Help/*.hhk
 DocProject/Help/*.hhp
-DocProject/Help/Html***REMOVED***
+DocProject/Help/Html2
 DocProject/Help/html
 
 # Click-Once directory
@@ -241,11 +241,11 @@ ClientBin/
 orleans.codegen.cs
 
 # Including strong name files can present a security risk
-# (https://github.com/github/gitignore/pull/***REMOVED***483#issue-***REMOVED***594904***REMOVED***4)
+# (https://github.com/github/gitignore/pull/2483#issue-259490424)
 #*.snk
 
 # Since there are multiple workflows, uncomment next line to ignore bower_components
-# (https://github.com/github/gitignore/pull/15***REMOVED***9#issuecomment-10437***REMOVED***6***REMOVED******REMOVED***)
+# (https://github.com/github/gitignore/pull/1529#issuecomment-104372622)
 #bower_components/
 
 # RIA/Silverlight projects
@@ -353,7 +353,7 @@ ASALocalRun/
 # BeatPulse healthcheck temp database
 healthchecksdb
 
-# Backup folder for Package Reference Convert tool in Visual Studio ***REMOVED***017
+# Backup folder for Package Reference Convert tool in Visual Studio 2017
 MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder

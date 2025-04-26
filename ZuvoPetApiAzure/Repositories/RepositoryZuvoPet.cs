@@ -2,11 +2,11 @@
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 using System.Security.Claims;
-using ***REMOVED***.Data;
-using ***REMOVED***.Helpers;
+using ZuvoPetApiAzure.Data;
+using ZuvoPetApiAzure.Helpers;
 using ZuvoPetNuget.Models;
 
-namespace ***REMOVED***.Repositories
+namespace ZuvoPetApiAzure.Repositories
 {
     public class RepositoryZuvoPet : IRepositoryZuvoPet
     {
@@ -115,11 +115,11 @@ namespace ***REMOVED***.Repositories
             }
             if (meses < 0)
             {
-                meses += 1***REMOVED***;
+                meses += 12;
             }
 
             // Retorna los meses totales
-            return edadEnAnios * 1***REMOVED*** + meses;
+            return edadEnAnios * 12 + meses;
         }
 
         public async Task<List<HistoriaExito>> ObtenerHistoriasExitoAsync()
@@ -834,7 +834,7 @@ namespace ***REMOVED***.Repositories
                         this.context.Favoritos.RemoveRange(favoritos);
                     }
 
-                    // ***REMOVED***. Eliminar solicitudes de adopción relacionadas con esta mascota
+                    // 2. Eliminar solicitudes de adopción relacionadas con esta mascota
                     var solicitudes = await this.context.SolicitudesAdopcion
                         .Where(s => s.IdMascota == id)
                         .ToListAsync();

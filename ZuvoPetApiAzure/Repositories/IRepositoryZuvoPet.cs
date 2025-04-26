@@ -1,6 +1,6 @@
 ﻿using ZuvoPetNuget.Models;
 
-namespace ***REMOVED***.Repositories
+namespace ZuvoPetApiAzure.Repositories
 {
     public interface IRepositoryZuvoPet
     {

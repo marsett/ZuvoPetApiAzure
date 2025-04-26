@@ -2,7 +2,7 @@
 using System.Text.Json;
 using ZuvoPetNuget.Models;
 
-namespace ***REMOVED***.Data
+namespace ZuvoPetApiAzure.Data
 {
     public class ZuvoPetContext : DbContext
     {
