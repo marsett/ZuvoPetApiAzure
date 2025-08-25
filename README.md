@@ -4,6 +4,8 @@
 
 API web desarrollada con .NET para la gestión integral de adopciones de mascotas, refugios, usuarios y veterinarios. Permite la administración de datos, autenticación, almacenamiento de imágenes y consulta de historias de éxito.
 
+🔗 **[Ver Api en Vivo](https://zuvopetapiazure.azurewebsites.net/scalar/v1)**
+
 ## 🛠️ Tecnologías Utilizadas
 
 - **Framework:** .NET 9
